@@ -2,6 +2,7 @@
 # Autotools
 #
 Makefile.in
+Makefile
 
 /autom4te.cache
 /autoscan.log
@@ -46,3 +47,5 @@ Makefile.in
 *.hex
 
 *.dSYM/
+
+*~
