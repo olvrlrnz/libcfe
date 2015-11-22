@@ -12,11 +12,19 @@ Makefile
 /config.h.in
 /configure
 /configure.scan
-/depcomp
-/install-sh
-/missing
-/stamp-h1
-
+/stamp-h?
+/libtool
+/m4/
+.deps/
+.dirstamp
+.libs/
+/build-aux/ar-lib
+/build-aux/compile
+/build-aux/config.*
+/build-aux/depcomp
+/build-aux/install-sh
+/build-aux/ltmain.sh
+/build-aux/missing
 
 #
 # C artifacts
