@@ -11,7 +11,7 @@ AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_PRESERVE_HELP_ORDER
 
-AM_INIT_AUTOMAKE([1.15 check-news foreign silent-rules subdir-objects -Wall -Werror])
+AM_INIT_AUTOMAKE([1.14 check-news foreign silent-rules subdir-objects -Wall -Werror])
 AC_CONFIG_HEADER([config.h])
 
 AM_SILENT_RULES([no])
