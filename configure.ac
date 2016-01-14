@@ -44,8 +44,8 @@ AX_PTHREAD([
 LT_INIT
 LT_LANG([C])
 
-PKG_PROG_PKG_CONFIG([0.29])
-PKG_CHECK_MODULES([CHECK], [check >= 0.10.0])
+PKG_PROG_PKG_CONFIG([0.28])
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.0])
 
 case $host_os in
 	darwin*)
