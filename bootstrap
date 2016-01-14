@@ -5,3 +5,4 @@ set -e
 mkdir -p build-aux compat
 
 autoreconf -i -Wall
+libtoolize
