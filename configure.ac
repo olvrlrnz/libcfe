@@ -1,6 +1,6 @@
 AC_PREREQ([2.69])
 
-AC_INIT([libcfe],[m4_esyscmd_s([tr -d '\n' <.version])],[bugs@olorenz.org])
+AC_INIT([libcfe],[0.1.0],[bugs@olorenz.org])
 
 AC_CONFIG_SRCDIR([src/log.c])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -45,7 +45,7 @@ LT_INIT
 LT_LANG([C])
 
 PKG_PROG_PKG_CONFIG([0.28])
-PKG_CHECK_MODULES([CHECK], [check >= 0.9.0])
+PKG_CHECK_MODULES([CMOCKA], [cmocka >= 1.0.1])
 
 case $host_os in
 	darwin*)
