@@ -5,6 +5,7 @@
 #include <setjmp.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <cmocka.h>
 #include <crypto/hash.h>
