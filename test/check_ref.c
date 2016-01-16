@@ -1,11 +1,13 @@
 #include <errno.h>
-#include <check.h>
-#include <stdlib.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <setjmp.h>
+#include <cmocka.h>
 #include <cfe/ref.h>
 
 #define container_of(ptr, type, member)				\
 ({								\
-	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
+	typeof( ((type *)0)->member ) *__mptr = (ptr);		\
 	(type *)( (char *)__mptr - offsetof(type,member) );	\
 })
 
@@ -44,70 +46,43 @@ static void dummy_get(struct dummy *dummy)
 	cfe_ref_get(&dummy->ref);
 }
 
-START_TEST(test_ref1)
+static void test_ref1(void **state)
 {
 	int res;
 	static struct dummy *d;
 
 	d = dummy_new();
-	ck_assert_ptr_ne(d, NULL);
+	assert_ptr_not_equal(d, NULL);
 
 	res = dummy_put(d);
-	ck_assert_int_eq(res, 1);
+	assert_int_equal(res, 1);
 }
-END_TEST
 
-START_TEST(test_ref2)
+static void test_ref2(void **state)
 {
 	int res;
 	static struct dummy *d;
 
 	d = dummy_new();
-	ck_assert_ptr_ne(d, NULL);
+	assert_ptr_not_equal(d, NULL);
 
 	dummy_get(d);
 	res = dummy_put(d);
-	ck_assert_int_eq(res, 0);
+	assert_int_equal(res, 0);
 
 	res = dummy_put(d);
-	ck_assert_int_eq(res, 1);
+	assert_int_equal(res, 1);
 }
-END_TEST
-
-static Suite *add_suite(void)
-{
-	Suite *s;
-	TCase *tc;
-
-	s = suite_create("ref");
-
-	tc = tcase_create("test_ref1");
-	tcase_add_test(tc, test_ref1);
-	suite_add_tcase(s, tc);
-
-	tc = tcase_create("test_ref2");
-	tcase_add_test(tc, test_ref2);
-	suite_add_tcase(s, tc);
-
-	return s;
-}
-
 
 int main(int argc, char *argv[])
 {
-	int failed;
-	Suite *s;
-	SRunner *sr;
+	const struct CMUnitTest tests[] = {
+		cmocka_unit_test(test_ref1),
+		cmocka_unit_test(test_ref2),
+	};
 
-	s = add_suite();
-	sr = srunner_create(s);
-
-	srunner_set_tap(sr, "report.xml");
-	srunner_set_fork_status(sr, CK_NOFORK);
-	srunner_run_all(sr, CK_VERBOSE);
-	failed = srunner_ntests_failed(sr);
-
-	srunner_free(sr);
-	return failed ? 1 : 0;
+	unlink(__FILE__".xml");
+	setenv("CMOCKA_XML_FILE", __FILE__".xml", 1);
+	cmocka_set_message_output(CM_OUTPUT_XML);
+	return cmocka_run_group_tests_name("ref", tests, NULL, NULL);
 }
-
