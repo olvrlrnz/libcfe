@@ -1,6 +1,6 @@
 AC_PREREQ([2.69])
 
-AC_INIT([libcfe],[0.1.0],[bugs@olorenz.org])
+AC_INIT([libcfe],[0.1.0],[libcfe@olorenz.org])
 
 AC_CONFIG_SRCDIR([src/log.c])
 AC_CONFIG_AUX_DIR([build-aux])
