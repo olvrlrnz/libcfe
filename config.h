@@ -44,7 +44,7 @@
 #define PACKAGE "libcfe"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "bugs@olorenz.org"
+#define PACKAGE_BUGREPORT "libcfe@olorenz.org"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "libcfe"
