@@ -1,11 +1,9 @@
-TESTS=check_filewriter check_ref check_keystore check_hash check_create
+check_PROGRAMS = check_filewriter check_ref check_keystore check_hash check_create
+TESTS = $(check_PROGRAMS)
 
 
 TESTS_CFLAGS  = @CMOCKA_CFLAGS@ -I$(top_builddir)/include
 TESTS_LDADD   = @CMOCKA_LIBS@ $(top_builddir)/src/libcfe.la -lkeyutils -lcrypto
-
-
-check_PROGRAMS = check_filewriter check_ref check_keystore check_hash check_create
 
 
 check_filewriter_SOURCES = check_filewriter.c
