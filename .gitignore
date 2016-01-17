@@ -10,6 +10,8 @@ Makefile
 /aclocal.m4
 /compile
 /config.h.in
+/config.log
+/config.status
 /configure
 /configure.scan
 /stamp-h?
@@ -57,3 +59,11 @@ Makefile
 *.dSYM/
 
 *~
+
+#
+# cmocka
+#
+test/**/*.log
+test/**/*.trs
+test/**/*.xml
+/test/check_*
