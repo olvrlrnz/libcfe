@@ -1,3 +1,3 @@
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = include src lib . test
+SUBDIRS = include src lib . tests

@@ -6,7 +6,7 @@ AC_CONFIG_SRCDIR([src/log.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_LIBOBJ_DIR([compat])
-AC_CONFIG_TESTDIR([test])
+AC_CONFIG_TESTDIR([tests])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_PRESERVE_HELP_ORDER
@@ -71,6 +71,6 @@ AC_CONFIG_FILES([Makefile
                  lib/Makefile
                  lib/libcfe.pc
                  src/Makefile
-                 test/Makefile
+                 tests/Makefile
                ])
 AC_OUTPUT

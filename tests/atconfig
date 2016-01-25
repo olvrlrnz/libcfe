@@ -3,10 +3,10 @@
 # Copyright (C) 2012 Free Software Foundation, Inc.
 
 # The test suite will define top_srcdir=/../.. etc.
-at_testdir='test'
-abs_builddir='/home/olorenz/src/libcfe/test'
+at_testdir='tests'
+abs_builddir='/home/olorenz/src/libcfe/tests'
 at_srcdir='.'
-abs_srcdir='/home/olorenz/src/libcfe/test'
+abs_srcdir='/home/olorenz/src/libcfe/tests'
 at_top_srcdir='..'
 abs_top_srcdir='/home/olorenz/src/libcfe'
 at_top_build_prefix='../'
@@ -15,6 +15,6 @@ abs_top_builddir='/home/olorenz/src/libcfe'
 # Backward compatibility with Autotest <= 2.59b:
 at_top_builddir=$at_top_build_prefix
 
-AUTOTEST_PATH='test'
+AUTOTEST_PATH='tests'
 
 SHELL=${CONFIG_SHELL-'/bin/sh'}
