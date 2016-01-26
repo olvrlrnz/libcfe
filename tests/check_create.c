@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <setjmp.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <cmocka.h>
 #include <cfe/cfe.h>
@@ -11,15 +12,22 @@
 
 static void check_create(void **state)
 {
+	int fd;
+	char name[16];
 	struct cfe_file *file;
 	struct cfe_open_params params = {
-		.header_size = 123,
+		.header_size = 0,
 		.key_ident = "cfe:nonexisting",
 	};
 
-	file = cfe_open("/tmp/foobar.txt", O_CREAT | O_EXCL | O_TRUNC, 0600, &params);
-	/* FIXME */
-	assert_ptr_equal(file, NULL);
+	memset(name, 0, sizeof(name));
+	strcpy(name, "libcfe_XXXXXX");
+	fd = mkstemp(name);
+	assert_int_not_equal(fd, -1);
+
+	file = cfe_create(fd, O_CREAT | O_EXCL | O_TRUNC, 0600, &params);
+	assert_ptr_not_equal(file, NULL);
+	assert_int_equal(params.header_size, 4096U);
 }
 
 int main(int argc, char *argv[])

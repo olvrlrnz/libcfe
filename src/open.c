@@ -26,7 +26,7 @@ static void cfe_file_destroy(struct cfe_file *file)
 		return;
 
 	if (file->header)
-		cfe_header_free(file->header);
+		cfe_header_close(file->header);
 }
 
 static void cfe_file_free(struct cfe_file *file)
@@ -58,7 +58,7 @@ static struct cfe_file *cfe_file_new(void)
 
 
 
-static struct cfe_file *do_open(const char *pathname, int flags,
+static struct cfe_file *do_open(int fd, int flags,
                                 struct cfe_open_params *params)
 {
 	errno = ENOSYS;
@@ -66,20 +66,14 @@ static struct cfe_file *do_open(const char *pathname, int flags,
 }
 
 
-static struct cfe_file *do_create(const char *pathname, int flags, mode_t mode,
+static struct cfe_file *do_create(int fd, int flags, mode_t mode,
                                   struct cfe_open_params *params)
 {
-	autofd fd = -1;
 	struct cfe_file *file = NULL;
 
 	file = cfe_file_new();
 	if (!file)
 		return NULL;
-
-	fd = open(pathname, flags, mode);
-	if (fd < 0) {
-		goto failed;
-	}
 
 	params->header_size = normalize_headersize(params->header_size);
 	file->header = cfe_header_create(CFE_HEADER_VERSION_DEFAULT,
@@ -88,51 +82,45 @@ static struct cfe_file *do_create(const char *pathname, int flags, mode_t mode,
 		goto failed;
 	}
 
+	return file;
+
 failed:
 	cfe_file_free(file);
-	unlink(pathname);
 	return NULL;
 }
 
-struct cfe_file *cfe_open(const char *pathname, int flags, mode_t mode,
+struct cfe_file *cfe_open(int fd, int flags, mode_t mode,
                           struct cfe_open_params *params)
 {
-	int ret;
+	errno = ENOSYS;
+	return NULL;
+}
+
+struct cfe_file *cfe_create(int fd, int flags, mode_t mode,
+                            struct cfe_open_params *params)
+{
 	struct stat st;
 
-	if (!pathname || !params) {
+	if (fd < 0 || !params || !params->key_ident) {
 		errno = EINVAL;
 		return NULL;
 	}
 
-	if (!params->key_ident && ((flags & O_CREAT) || (flags & O_TRUNC))) {
+	if (strncmp(params->key_ident, "cfe:", 4)) {
 		errno = EINVAL;
 		return NULL;
 	}
 
-	if (params->key_ident) {
-		if (strncmp(params->key_ident, "cfe:", 4)) {
-			errno = EKEYREJECTED;
-			return NULL;
-		}
-		params->key_ident += 4;
-	}
+	params->key_ident += 4;
 
-	ret = stat(pathname, &st);
-	if (ret == 0) {
-		if (S_ISDIR(st.st_mode)) {
-			errno = EISDIR;
-			return NULL;
-		} else if (!S_ISREG(st.st_mode)) {
-			errno = EPERM;
-			return NULL;
-		}
-
-		return do_open(pathname, flags, params);
-	}
-
-	if (errno != ENOENT)
+	memset(&st, 0, sizeof(st));
+	if (fstat(fd, &st))
 		return NULL;
 
-	return do_create(pathname, flags, mode, params);
+	if (!S_ISREG(st.st_mode) || st.st_size != 0) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	return do_create(fd, flags, mode, params);
 }

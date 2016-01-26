@@ -110,7 +110,7 @@ struct cfe_header *cfe_header_create(int version, int fd, size_t size)
 	return header;
 }
 
-void cfe_header_free(struct cfe_header *header)
+void cfe_header_close(struct cfe_header *header)
 {
 	struct cfe_header_type *type;
 
@@ -118,6 +118,6 @@ void cfe_header_free(struct cfe_header *header)
 		return;
 
 	type = header->type;
-	header->ops->destroy(header);
+	header->ops->free(header);
 	cfe_atomic_dec(&type->refcnt);
 }

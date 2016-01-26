@@ -16,7 +16,10 @@ struct cfe_open_params {
 };
 
 
-extern struct cfe_file *cfe_open(const char *pathname, int flags, mode_t mode,
+extern struct cfe_file *cfe_open(int fd, int flags, mode_t mode,
                                  struct cfe_open_params *params);
+
+extern struct cfe_file *cfe_create(int fd, int flags, mode_t mode,
+                                   struct cfe_open_params *params);
 
 #endif
