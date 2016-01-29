@@ -10,9 +10,8 @@
 #include <cfe/macros.h>
 #include <cfe/types.h>
 #include <fs/header.h>
-#include <fs/file_writer.h>
+#include <fs/filewriter.h>
 #include <sys/stat.h>
-#include "fs/header-internal.h"
 
 
 struct cfe_file {
@@ -75,7 +74,6 @@ static struct cfe_file *do_create(int fd, int flags, mode_t mode,
 	if (!file)
 		return NULL;
 
-	params->header_size = normalize_headersize(params->header_size);
 	file->header = cfe_header_create(CFE_HEADER_VERSION_DEFAULT,
 	                                 fd, params->header_size);
 	if (!file->header) {
