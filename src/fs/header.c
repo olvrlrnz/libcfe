@@ -1,9 +1,11 @@
 #include <errno.h>
 #include <pthread.h>
 #include <string.h>
+#include <unistd.h>
 #include <cfe/atomic.h>
 #include <cfe/log.h>
 #include <fs/header.h>
+#include "header-internal.h"
 
 
 static LIST_HEAD(header_list);
@@ -100,6 +102,7 @@ struct cfe_header *cfe_header_create(int version, int fd, size_t size)
 		return NULL;
 	}
 
+	size = normalize_headersize(size);
 	header = type->alloc(fd, size);
 	if (!header) {
 		cfe_atomic_dec(&type->refcnt);
