@@ -3,12 +3,18 @@ lib_LTLIBRARIES = libcfe.la
 SRC  = log.c
 SRC += open.c
 SRC += keystore.c
+if LINUX
 SRC += keystore-linux.c
+endif
+if DARWIN
+SRC += keystore-darwin.c
+endif
 SRC += crypto/hash.c
 SRC += crypto/hash-openssl.c
 SRC += fs/header.c
 SRC += fs/header-v1.c
-SRC += fs/file_writer.c
+SRC += fs/filewriter.c
+SRC += fs/filewriter-v1.c
 
 libcfe_la_CFLAGS   = -I$(top_builddir)/include
 libcfe_la_LDFLAGS  = -version-info 0:0:0

@@ -1,6 +1,6 @@
 nobase_include_HEADERS = crypto/hash.h \
 			 fs/header.h \
-			 fs/file_writer.h \
+			 fs/filewriter.h \
 			 cfe/macros.h \
 			 cfe/malloc.h \
 			 cfe/compiler.h \

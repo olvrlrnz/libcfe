@@ -1,6 +1,6 @@
 AC_PREREQ([2.69])
 
-AC_INIT([libcfe],[0.1.0],[libcfe@olorenz.org])
+AC_INIT([libcfe],[0.1.0],[libcfe@lists.olorenz.org])
 
 AC_CONFIG_SRCDIR([src/log.c])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -47,22 +47,31 @@ LT_LANG([C])
 PKG_PROG_PKG_CONFIG([0.28])
 PKG_CHECK_MODULES([CMOCKA], [cmocka >= 1.0.1])
 
+AM_CONDITIONAL([LINUX], [test ${host_os} = "linux"])
 case $host_os in
 	darwin*)
 		AC_MSG_NOTICE([OS Darwin])
-		#AC_SUBST(DARWIN)
+		AC_SUBST(DARWIN)
+		AM_CONDITIONAL(DARWIN, true)
+		AM_CONDITIONAL(LINUX, false)
+		AM_CONDITIONAL(BSD, false)
 		;;
 	linux*)
 		AC_MSG_NOTICE([OS Linux])
-		#AC_SUBST(LINUX)
+		AC_SUBST(LINUX)
+		AM_CONDITIONAL(DARWIN, false)
+		AM_CONDITIONAL(LINUX, true)
+		AM_CONDITIONAL(BSD, false)
 		;;
 	*BSD*)
 		AC_MSG_NOTICE([OS BSD])
-		#AC_SUBST(BSD)
+		AC_SUBST(BSD)
+		AM_CONDITIONAL(DARWIN, false)
+		AM_CONDITIONAL(LINUX, false)
+		AM_CONDITIONAL(BSD, true)
 		;;
 	*)
 		AC_MSG_NOTICE([OS Unknown])
-		#AC_SUBST(UNKNOWN)
 		;;
 esac
 

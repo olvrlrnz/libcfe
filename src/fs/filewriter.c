@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <pthread.h>
 #include <string.h>
-#include <fs/file_writer.h>
+#include <fs/filewriter.h>
 #include <cfe/log.h>
 
 
@@ -100,9 +100,10 @@ struct cfe_filewriter *cfe_filewriter_create(int version)
 		return NULL;
 	}
 
-	writer = type->allocate_writer();
+	writer = type->alloc();
 	if (!writer)
 		cfe_atomic_dec(&type->refcnt);
 
+	writer->type = type;
 	return writer;
 }

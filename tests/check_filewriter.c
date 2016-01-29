@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <cmocka.h>
-#include <fs/file_writer.h>
+#include <fs/filewriter.h>
 
 static struct cfe_filewriter_type writer = {
-	.version = 1
+	.version = 1337
 };
 
 static void register_writer(void **state)
