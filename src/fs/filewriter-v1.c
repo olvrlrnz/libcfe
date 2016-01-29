@@ -69,7 +69,6 @@ static const struct cfe_filewriter_ops cfe_filewriter_v1_ops = {
 
 static struct cfe_filewriter *cfe_filewriter_v1_alloc(void)
 {
-	int ret;
 	struct cfe_filewriter_v1 *writer;
 
 	writer = cfe_filewriter_v1_new();
@@ -78,10 +77,6 @@ static struct cfe_filewriter *cfe_filewriter_v1_alloc(void)
 
 	writer->base.ops = &cfe_filewriter_v1_ops;
 	return &writer->base;
-
-failed:
-	cfe_filewriter_v1_free(writer);
-	return NULL;
 }
 
 static struct cfe_filewriter_type writer_v1_type = {
