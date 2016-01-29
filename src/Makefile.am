@@ -11,6 +11,8 @@ SRC += keystore-darwin.c
 endif
 SRC += crypto/hash.c
 SRC += crypto/hash-openssl.c
+SRC += crypto/cipher.c
+SRC += crypto/cipher-openssl.c
 SRC += fs/header.c
 SRC += fs/header-v1.c
 SRC += fs/filewriter.c

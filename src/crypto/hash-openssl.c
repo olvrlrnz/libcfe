@@ -24,7 +24,7 @@ static inline struct openssl_generic_ctx *OPENSSL_CTX(struct cfe_hash_ctx *ctx)
 }
 
 
-static int openssl_generic_ctx_init(_unused_ struct cfe_hash_ctx *ctx)
+static int openssl_generic_ctx_init(struct cfe_hash_ctx *ctx)
 {
 	struct openssl_generic_ctx *octx;
 
