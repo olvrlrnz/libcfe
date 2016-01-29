@@ -63,7 +63,7 @@ Makefile
 #
 # cmocka
 #
-test/**/*.log
-test/**/*.trs
-test/**/*.xml
-/test/check_*
+tests/**/*.log
+tests/**/*.trs
+tests/**/*.xml
+/tests/check_*
