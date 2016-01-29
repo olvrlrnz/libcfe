@@ -9,9 +9,9 @@
 
 
 #ifdef DEBUG
-#define _must_be_array(a)		BUILD_BUG_ON_ZERO(__same_type((a), &(a)[0]))
+#define _must_be_array_(a)		BUILD_BUG_ON_ZERO(_same_type_((a), &(a)[0]))
 #else
-#define _must_be_array(a)		0
+#define _must_be_array_(a)		0
 #endif
 
 
@@ -54,3 +54,5 @@
 	const typeof( ((type *)0)->member ) *__mptr = (ptr);		\
 	(type *)( (char *)__mptr - __builtin_offsetof(type,member) );	\
 })
+
+#define ARRAY_SIZE(a)			(sizeof(a) / sizeof((a)[0]) + _must_be_array_(a))
