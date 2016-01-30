@@ -27,6 +27,7 @@ static void check_create(void **state)
 
 	file = cfe_create(fd, O_CREAT | O_EXCL | O_TRUNC, 0600, &params);
 	assert_ptr_not_equal(file, NULL);
+	unlink(name);
 }
 
 int main(int argc, char *argv[])
