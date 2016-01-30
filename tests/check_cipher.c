@@ -11,6 +11,7 @@
 #include <cfe/compiler.h>
 #include <cfe/bug.h>
 #include <crypto/cipher.h>
+#include "utils.h"
 
 
 struct test_data {
@@ -20,32 +21,167 @@ struct test_data {
 	const char *cipher;
 };
 
+struct aead_test_data {
+	const char *aad;
+	const char *tag;
+	struct test_data data;
+};
+
 
 static const char *zeroed_string16 = "00000000000000000000000000000000";
+static const char *zeroed_string12 = "000000000000000000000000";
 
 
-static void fromhex(const unsigned char *in, size_t isize, char *out)
+static void _generic_check_aead_encrypt(const char *algname,
+                                        const struct aead_test_data *data)
+{
+	int res;
+	size_t len = 0;
+	size_t have = 0;
+	struct cfe_cipher_ctx *ctx;
+
+	size_t aadsize = data->aad ? strlen(data->aad) / 2 : 0;
+	size_t tagsize = strlen(data->tag) / 2;
+	size_t ivsize = strlen(data->data.iv) / 2;
+	size_t keysize = strlen(data->data.key) / 2;
+	size_t plainsize = strlen(data->data.plain) / 2;
+	size_t ciphersize = strlen(data->data.cipher) / 2;
+
+	unsigned char _aad[128];
+	unsigned char _tag[128];
+	unsigned char _iv[128];
+	unsigned char _key[128];
+	unsigned char _plain[128];
+	unsigned char _cipher[128];
+	unsigned char _result[128];
+	unsigned char _tagresult[128];
+
+	if (data->aad)
+		hex_str_to_bytes(data->aad, _aad);
+	hex_str_to_bytes(data->tag, _tag);
+	hex_str_to_bytes(data->data.iv, _iv);
+	hex_str_to_bytes(data->data.key, _key);
+	hex_str_to_bytes(data->data.plain, _plain);
+	hex_str_to_bytes(data->data.cipher, _cipher);
+
+	ctx = cfe_cipher_alloc_ctx(algname);
+	assert_ptr_not_equal(ctx, NULL);
+
+	res = cfe_cipher_ctx_init(ctx, CFE_CIPHER_MODE_ENCRYPT, _key, keysize, _iv, ivsize);
+	assert_int_equal(res, 0);
+
+	res = cfe_cipher_ctx_set_padding(ctx, 0);
+	assert_int_equal(res, 0);
+
+	if (data->aad) {
+		res = cfe_cipher_ctx_set_aad(ctx, _aad, aadsize);
+		assert_int_equal(res, 0);
+	}
+
+	res = cfe_cipher_ctx_update(ctx, _plain, plainsize, _result, &have);
+	assert_int_equal(have, plainsize);
+	assert_int_equal(res, 0);
+
+	len += have;
+	res = cfe_cipher_ctx_finalize(ctx, _result + len, &have);
+	assert_int_equal(have, 0);
+	assert_int_equal(res, 0);
+
+	len += have;
+	res = cfe_cipher_ctx_get_tag(ctx, _tagresult, tagsize);
+	assert_int_equal(res, 0);
+
+	res = memcmp(_result, _cipher, len);
+	assert_int_equal(res, 0);
+
+	res = memcmp(_tagresult, _tag, tagsize);
+	assert_int_equal(res, 0);
+
+	cfe_cipher_destroy_ctx(ctx);
+}
+
+static void _generic_check_aead_decrypt(const char *algname,
+                                        const struct aead_test_data *data)
+{
+	int res;
+	size_t len = 0;
+	size_t have = 0;
+	struct cfe_cipher_ctx *ctx;
+
+	size_t aadsize = data->aad ? strlen(data->aad) / 2 : 0;
+	size_t tagsize = strlen(data->tag) / 2;
+	size_t ivsize = strlen(data->data.iv) / 2;
+	size_t keysize = strlen(data->data.key) / 2;
+	size_t plainsize = strlen(data->data.plain) / 2;
+	size_t ciphersize = strlen(data->data.cipher) / 2;
+
+	unsigned char _aad[128];
+	unsigned char _tag[128];
+	unsigned char _iv[128];
+	unsigned char _key[128];
+	unsigned char _plain[128];
+	unsigned char _cipher[128];
+	unsigned char _result[128];
+	unsigned char _tagresult[128];
+
+	if (data->aad)
+		hex_str_to_bytes(data->aad, _aad);
+	hex_str_to_bytes(data->tag, _tag);
+	hex_str_to_bytes(data->data.iv, _iv);
+	hex_str_to_bytes(data->data.key, _key);
+	hex_str_to_bytes(data->data.plain, _plain);
+	hex_str_to_bytes(data->data.cipher, _cipher);
+
+	ctx = cfe_cipher_alloc_ctx(algname);
+	assert_ptr_not_equal(ctx, NULL);
+
+	res = cfe_cipher_ctx_init(ctx, CFE_CIPHER_MODE_DECRYPT, _key, keysize, _iv, ivsize);
+	assert_int_equal(res, 0);
+
+	res = cfe_cipher_ctx_set_padding(ctx, 0);
+	assert_int_equal(res, 0);
+
+	if (data->aad) {
+		res = cfe_cipher_ctx_set_aad(ctx, _aad, aadsize);
+		assert_int_equal(res, 0);
+	}
+
+	res = cfe_cipher_ctx_update(ctx, _cipher, ciphersize, _result, &have);
+	assert_int_equal(have, plainsize);
+	assert_int_equal(res, 0);
+
+	len += have;
+
+	res = cfe_cipher_ctx_set_tag(ctx, _tag, tagsize);
+	assert_int_equal(res, 0);
+
+	res = cfe_cipher_ctx_finalize(ctx, _result + len, &have);
+	assert_int_equal(have, 0);
+	assert_int_equal(res, 0);
+
+	res = memcmp(_result, _plain, have);
+	assert_int_equal(res, 0);
+
+	cfe_cipher_destroy_ctx(ctx);
+}
+
+static void _generic_check_aead_cipher(const char *algname,
+                                       const struct aead_test_data *data)
+{
+	_generic_check_aead_encrypt(algname, data);
+	_generic_check_aead_decrypt(algname, data);
+}
+
+static void generic_check_aead_cipher(const char *algname,
+                                      const struct aead_test_data *data,
+                                      size_t dsize)
 {
 	size_t i;
-	char *tmp;
 
-	for (i = 0, tmp = out; i < isize; ++i)
-		tmp += sprintf(tmp, "%02x", in[i]);
-
-	*tmp = '\0';
+	for (i = 0; i < dsize; ++i)
+		_generic_check_aead_cipher(algname, data + i);
 }
 
-static void tohex(const char *in, unsigned char *out)
-{
-	size_t i, len;
-	const char *tmp;
-
-	len = strlen(in);
-	for (i = 0, tmp = in; i < len; ++i) {
-		sscanf(tmp, "%2hhx", &out[i]);
-		tmp += 2;
-	}
-}
 
 static void __generic_check_cipher(const char *algname,
                                    enum cfe_cipher_mode mode,
@@ -65,12 +201,12 @@ static void __generic_check_cipher(const char *algname,
 	unsigned char _key[keysize];
 	unsigned char _plain[plainsize];
 	unsigned char _cipher[ciphersize];
-	unsigned char _result[2 * ciphersize];
+	unsigned char _result[ciphersize];
 
-	tohex(iv, _iv);
-	tohex(key, _key);
-	tohex(plain, _plain);
-	tohex(cipher, _cipher);
+	hex_str_to_bytes(iv, _iv);
+	hex_str_to_bytes(key, _key);
+	hex_str_to_bytes(plain, _plain);
+	hex_str_to_bytes(cipher, _cipher);
 
 	ctx = cfe_cipher_alloc_ctx(algname);
 	assert_ptr_not_equal(ctx, NULL);
@@ -201,12 +337,39 @@ static void check_cbc256(void **state)
 	generic_check_cipher("aes-cbc-256", data, ARRAY_SIZE(data));
 }
 
+static void check_gcm128(void **state)
+{
+	const struct aead_test_data data[] = {
+		{
+			.aad	= "feedfacedeadbeeffeedfacedeadbeef"
+			          "abaddad2",
+			.tag	= "5bc94fbc3221a5db94fae95ae7121a47",
+			.data	= {
+			.iv	= "cafebabefacedbaddecaf888",
+			.key	= "feffe9928665731c6d6a8f9467308308",
+			.plain	= "d9313225f88406e5a55909c5aff5269a"
+			          "86a7a9531534f7da2e4c303d8a318a72"
+			          "1c3c0c95956809532fcf0e2449a6b525"
+			          "b16aedf5aa0de657ba637b39",
+			.cipher	= "42831ec2217774244b7221b784d0d49c"
+			          "e3aa212f2c02a4e035c17e2329aca12e"
+			          "21d514b25466931c7d8f6a5aac84aa05"
+			          "1ba30b396a0aac973d58e091",
+			}
+		}
+	};
+
+	generic_check_aead_cipher("aes-gcm-128", data, ARRAY_SIZE(data));
+}
+
+
 int main(int argc, char *argv[])
 {
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test(check_cbc128),
 		cmocka_unit_test(check_cbc192),
 		cmocka_unit_test(check_cbc256),
+		cmocka_unit_test(check_gcm128),
 	};
 
 	unlink(__FILE__".xml");

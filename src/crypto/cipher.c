@@ -125,7 +125,7 @@ int cfe_cipher_ctx_init(struct cfe_cipher_ctx *ctx, enum cfe_cipher_mode mode,
 	}
 
 	type = ctx->type;
-	if (iv && isize != type->ivsize) {
+	if (iv && isize > type->ivsize) {
 		/* iv is optional */
 		errno = EINVAL;
 		return 1;
@@ -137,7 +137,7 @@ int cfe_cipher_ctx_init(struct cfe_cipher_ctx *ctx, enum cfe_cipher_mode mode,
 		return 1;
 	}
 
-	return ctx->ops->init(ctx, mode, key, iv);
+	return ctx->ops->init(ctx, mode, key, ksize, iv, isize);
 }
 
 int cfe_cipher_ctx_update(struct cfe_cipher_ctx *ctx,
@@ -181,4 +181,46 @@ int cfe_cipher_ctx_set_padding(struct cfe_cipher_ctx *ctx, int on)
 	}
 
 	return ctx->ops->set_padding(ctx, on);
+}
+
+int cfe_cipher_ctx_set_aad(struct cfe_cipher_ctx *ctx,
+                           unsigned char *aad, size_t asize)
+{
+	struct cfe_cipher_aead_ops *ops;
+
+	if (!ctx || !(ctx->type->flags & CIPHER_TYPE_AEAD)) {
+		errno = EINVAL;
+		return 1;
+	}
+
+	ops = AEAD_OPS(ctx->ops);
+	return ops->set_aad(ctx, aad, asize);
+}
+
+int cfe_cipher_ctx_set_tag(struct cfe_cipher_ctx *ctx,
+                           unsigned char *tag, size_t tsize)
+{
+	struct cfe_cipher_aead_ops *ops;
+
+	if (!ctx || !(ctx->type->flags & CIPHER_TYPE_AEAD)) {
+		errno = EINVAL;
+		return 1;
+	}
+
+	ops = AEAD_OPS(ctx->ops);
+	return ops->set_tag(ctx, tag, tsize);
+}
+
+int cfe_cipher_ctx_get_tag(struct cfe_cipher_ctx *ctx,
+                           unsigned char *tag, size_t tsize)
+{
+	struct cfe_cipher_aead_ops *ops;
+
+	if (!ctx || !(ctx->type->flags & CIPHER_TYPE_AEAD)) {
+		errno = EINVAL;
+		return 1;
+	}
+
+	ops = AEAD_OPS(ctx->ops);
+	return ops->get_tag(ctx, tag, tsize);
 }

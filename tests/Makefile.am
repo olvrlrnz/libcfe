@@ -22,7 +22,7 @@ check_hash_SOURCES = check_hash.c
 check_hash_CFLAGS  = $(TESTS_CFLAGS)
 check_hash_LDADD   = $(TESTS_LDADD)
 
-check_cipher_SOURCES = check_cipher.c
+check_cipher_SOURCES = check_cipher.c utils.c
 check_cipher_CFLAGS  = $(TESTS_CFLAGS)
 check_cipher_LDADD   = $(TESTS_LDADD)
 

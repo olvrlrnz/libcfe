@@ -27,13 +27,25 @@ static inline struct openssl_generic_ctx *OPENSSL_CTX(struct cfe_cipher_ctx *ctx
 
 static int openssl_generic_ctx_init(struct cfe_cipher_ctx *ctx,
                                     enum cfe_cipher_mode mode,
-                                    const unsigned char *key,
-                                    const unsigned char *iv)
+                                    const unsigned char *key, size_t ksize,
+                                    const unsigned char *iv, size_t isize)
 {
+	int res;
 	struct openssl_generic_ctx *octx;
 
 	octx = OPENSSL_CTX(ctx);
-	return EVP_CipherInit_ex(&octx->ctx, octx->cipher, NULL, key, iv, mode) == 0;
+	res = EVP_CipherInit_ex(&octx->ctx, octx->cipher, NULL, NULL, NULL, mode);
+	if (res != 1)
+		return 1;
+
+	if (ctx->type->flags & CIPHER_TYPE_AEAD) {
+		/* TODO: replace w/ EVP_CTRL_AEAD_SET_IVLEN */
+		res = EVP_CIPHER_CTX_ctrl(&octx->ctx, EVP_CTRL_GCM_SET_IVLEN, isize, NULL);
+		if (res != 1)
+			return 1;
+	}
+
+	return EVP_CipherInit_ex(&octx->ctx, NULL, NULL, key, iv, mode) != 1;
 }
 
 static int openssl_generic_ctx_update(struct cfe_cipher_ctx *ctx,
@@ -43,9 +55,7 @@ static int openssl_generic_ctx_update(struct cfe_cipher_ctx *ctx,
 	struct openssl_generic_ctx *octx;
 
 	octx = OPENSSL_CTX(ctx);
-	return EVP_CipherUpdate(&octx->ctx,
-	                        out, (int *) olen,
-	                        in, (int) inlen) == 0;
+	return EVP_CipherUpdate(&octx->ctx, out, (int *) olen, in, (int) inlen) != 1;
 }
 
 static int openssl_generic_ctx_finalize(struct cfe_cipher_ctx *ctx,
@@ -54,15 +64,42 @@ static int openssl_generic_ctx_finalize(struct cfe_cipher_ctx *ctx,
 	struct openssl_generic_ctx *octx;
 
 	octx = OPENSSL_CTX(ctx);
-	return EVP_CipherFinal_ex(&octx->ctx, out, (int *) olen) == 0;
+	return EVP_CipherFinal_ex(&octx->ctx, out, (int *) olen) != 1;
 }
 
-static int openssl_generic_set_padding(struct cfe_cipher_ctx *ctx, int on)
+static int openssl_generic_ctx_set_padding(struct cfe_cipher_ctx *ctx, int on)
 {
 	struct openssl_generic_ctx *octx;
 
 	octx = OPENSSL_CTX(ctx);
-	return EVP_CIPHER_CTX_set_padding(&octx->ctx, on ? 1 : 0) == 0;
+	return EVP_CIPHER_CTX_set_padding(&octx->ctx, on ? 1 : 0) != 1;
+}
+
+static int openssl_generic_ctx_set_aad(struct cfe_cipher_ctx *ctx,
+                                       unsigned char *aad, size_t asize)
+{
+	size_t size;
+	return openssl_generic_ctx_update(ctx, aad, asize, NULL, &size);
+}
+
+static int openssl_generic_ctx_get_tag(struct cfe_cipher_ctx *ctx,
+                                       unsigned char *tag, size_t tsize)
+{
+	struct openssl_generic_ctx *octx;
+
+	octx = OPENSSL_CTX(ctx);
+	/* TODO: replace w/ EVP_CTRL_AEAD_GET_TAG */
+	return EVP_CIPHER_CTX_ctrl(&octx->ctx, EVP_CTRL_GCM_GET_TAG, tsize, tag) != 1;
+}
+
+static int openssl_generic_ctx_set_tag(struct cfe_cipher_ctx *ctx,
+                                       unsigned char *tag, size_t tsize)
+{
+	struct openssl_generic_ctx *octx;
+
+	octx = OPENSSL_CTX(ctx);
+	/* TODO: replace w/ EVP_CTRL_AEAD_SET_TAG */
+	return EVP_CIPHER_CTX_ctrl(&octx->ctx, EVP_CTRL_GCM_SET_TAG, tsize, tag) != 1;
 }
 
 static void openssl_destroy_ctx(struct cfe_cipher_ctx *ctx)
@@ -74,18 +111,22 @@ static void openssl_destroy_ctx(struct cfe_cipher_ctx *ctx)
 	cfe_free(octx);
 }
 
-static const struct cfe_cipher_ops openssl_generic_ctx_ops = {
-	.init		= openssl_generic_ctx_init,
-	.update		= openssl_generic_ctx_update,
-	.finalize	= openssl_generic_ctx_finalize,
-	.set_padding	= openssl_generic_set_padding,
-	.destroy	= openssl_destroy_ctx,
-
+static const struct cfe_cipher_aead_ops openssl_generic_aead_ctx_ops = {
+	.set_aad		= openssl_generic_ctx_set_aad,
+	.get_tag		= openssl_generic_ctx_get_tag,
+	.set_tag		= openssl_generic_ctx_set_tag,
+	.base			= {
+		.init		= openssl_generic_ctx_init,
+		.update		= openssl_generic_ctx_update,
+		.finalize	= openssl_generic_ctx_finalize,
+		.set_padding	= openssl_generic_ctx_set_padding,
+		.destroy	= openssl_destroy_ctx,
+	}
 };
 
-
 static struct cfe_cipher_ctx *openssl_alloc_ctx(struct cfe_cipher_type *type,
-                                                const EVP_CIPHER *cipher)
+                                                const EVP_CIPHER *cipher,
+                                                const struct cfe_cipher_ops *ops)
 {
 	struct openssl_generic_ctx *octx;
 
@@ -93,7 +134,7 @@ static struct cfe_cipher_ctx *openssl_alloc_ctx(struct cfe_cipher_type *type,
 	if (octx) {
 		octx->cipher = cipher;
 		octx->base.type = type;
-		octx->base.ops = &openssl_generic_ctx_ops;
+		octx->base.ops = ops;
 	}
 
 	return &octx->base;
@@ -101,32 +142,38 @@ static struct cfe_cipher_ctx *openssl_alloc_ctx(struct cfe_cipher_type *type,
 
 static inline struct cfe_cipher_ctx *openssl_aes_cbc128_alloc_ctx(void)
 {
-	return openssl_alloc_ctx(&openssl_type_aes_cbc128, EVP_aes_128_cbc());
+	return openssl_alloc_ctx(&openssl_type_aes_cbc128, EVP_aes_128_cbc(),
+	                         &openssl_generic_aead_ctx_ops.base);
 }
 
 static inline struct cfe_cipher_ctx *openssl_aes_cbc192_alloc_ctx(void)
 {
-	return openssl_alloc_ctx(&openssl_type_aes_cbc192, EVP_aes_192_cbc());
+	return openssl_alloc_ctx(&openssl_type_aes_cbc192, EVP_aes_192_cbc(),
+	                         &openssl_generic_aead_ctx_ops.base);
 }
 
 static inline struct cfe_cipher_ctx *openssl_aes_cbc256_alloc_ctx(void)
 {
-	return openssl_alloc_ctx(&openssl_type_aes_cbc256, EVP_aes_256_cbc());
+	return openssl_alloc_ctx(&openssl_type_aes_cbc256, EVP_aes_256_cbc(),
+	                         &openssl_generic_aead_ctx_ops.base);
 }
 
 static inline struct cfe_cipher_ctx *openssl_aes_gcm128_alloc_ctx(void)
 {
-	return openssl_alloc_ctx(&openssl_type_aes_gcm128, EVP_aes_128_gcm());
+	return openssl_alloc_ctx(&openssl_type_aes_gcm128, EVP_aes_128_gcm(),
+	                         &openssl_generic_aead_ctx_ops.base);
 }
 
 static inline struct cfe_cipher_ctx *openssl_aes_gcm192_alloc_ctx(void)
 {
-	return openssl_alloc_ctx(&openssl_type_aes_gcm192, EVP_aes_192_gcm());
+	return openssl_alloc_ctx(&openssl_type_aes_gcm192, EVP_aes_192_gcm(),
+	                         &openssl_generic_aead_ctx_ops.base);
 }
 
 static inline struct cfe_cipher_ctx *openssl_aes_gcm256_alloc_ctx(void)
 {
-	return openssl_alloc_ctx(&openssl_type_aes_gcm256, EVP_aes_256_gcm());
+	return openssl_alloc_ctx(&openssl_type_aes_gcm256, EVP_aes_256_gcm(),
+	                         &openssl_generic_aead_ctx_ops.base);
 }
 
 static struct cfe_cipher_type openssl_type_aes_cbc128 = {
@@ -155,6 +202,7 @@ static struct cfe_cipher_type openssl_type_aes_cbc256 = {
 
 static struct cfe_cipher_type openssl_type_aes_gcm128 = {
 	.name		= "aes-gcm-128",
+	.flags		= CIPHER_TYPE_AEAD,
 	.ivsize		= 16,
 	.keysize	= 16,
 	.blocksize	= 1,
@@ -163,6 +211,7 @@ static struct cfe_cipher_type openssl_type_aes_gcm128 = {
 
 static struct cfe_cipher_type openssl_type_aes_gcm192 = {
 	.name		= "aes-gcm-192",
+	.flags		= CIPHER_TYPE_AEAD,
 	.ivsize		= 16,
 	.keysize	= 24,
 	.blocksize	= 1,
@@ -171,13 +220,14 @@ static struct cfe_cipher_type openssl_type_aes_gcm192 = {
 
 static struct cfe_cipher_type openssl_type_aes_gcm256 = {
 	.name		= "aes-gcm-256",
+	.flags		= CIPHER_TYPE_AEAD,
 	.ivsize		= 16,
 	.keysize	= 32,
 	.blocksize	= 1,
 	.alloc_ctx	= openssl_aes_gcm256_alloc_ctx,
 };
 
-static void _constructor_ hash_openssl_init(void)
+static void _constructor_ cipher_openssl_init(void)
 {
 	int ret;
 
