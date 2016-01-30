@@ -79,10 +79,14 @@ static void __generic_check_cipher(const char *algname,
 	assert_int_equal(res, 0);
 
 	res = cfe_cipher_ctx_update(ctx, _plain, plainsize, _result, &have);
+	assert_int_equal(have, plainsize);
 	assert_int_equal(res, 0);
 
 	res = cfe_cipher_ctx_finalize(ctx, _result + have, &have);
 	assert_int_equal(have, 0);
+	assert_int_equal(res, 0);
+
+	res = memcmp(_result, _cipher, have);
 	assert_int_equal(res, 0);
 
 	cfe_cipher_destroy_ctx(ctx);
@@ -199,6 +203,7 @@ int main(int argc, char *argv[])
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test(check_cbc128),
 		cmocka_unit_test(check_cbc192),
+		cmocka_unit_test(check_cbc256),
 	};
 
 	unlink(__FILE__".xml");
