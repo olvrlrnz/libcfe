@@ -20,6 +20,10 @@ struct test_data {
 	const char *cipher;
 };
 
+
+static const char *zeroed_string16 = "00000000000000000000000000000000";
+
+
 static void fromhex(const unsigned char *in, size_t isize, char *out)
 {
 	size_t i;
@@ -52,10 +56,10 @@ static void __generic_check_cipher(const char *algname,
 	size_t have = 0;
 	struct cfe_cipher_ctx *ctx;
 
-	size_t ivsize = iv ? strlen(iv) / 2: 0;
+	size_t ivsize = strlen(iv) / 2;
 	size_t keysize = strlen(key) / 2;
 	size_t plainsize = strlen(plain) / 2;
-	size_t ciphersize = strlen(cipher)/ 2;
+	size_t ciphersize = strlen(cipher) / 2;
 
 	unsigned char _iv[ivsize];
 	unsigned char _key[keysize];
@@ -63,8 +67,7 @@ static void __generic_check_cipher(const char *algname,
 	unsigned char _cipher[ciphersize];
 	unsigned char _result[2 * ciphersize];
 
-	if (iv)
-		tohex(iv, _iv);
+	tohex(iv, _iv);
 	tohex(key, _key);
 	tohex(plain, _plain);
 	tohex(cipher, _cipher);
@@ -72,7 +75,7 @@ static void __generic_check_cipher(const char *algname,
 	ctx = cfe_cipher_alloc_ctx(algname);
 	assert_ptr_not_equal(ctx, NULL);
 
-	res = cfe_cipher_ctx_init(ctx, mode, _key, keysize, iv ? _iv : NULL, ivsize);
+	res = cfe_cipher_ctx_init(ctx, mode, _key, keysize, _iv, ivsize);
 	assert_int_equal(res, 0);
 
 	res = cfe_cipher_ctx_set_padding(ctx, 0);
@@ -115,22 +118,22 @@ static void check_cbc128(void **state)
 {
 	const struct test_data data[] = {
 		{
-			.iv	= NULL,
+			.iv	= zeroed_string16,
 			.key	= "2b7e151628aed2a6abf7158809cf4f3c",
 			.plain	= "6bc1bee22e409f96e93d7e117393172a",
 			.cipher	= "3ad77bb40d7a3660a89ecaf32466ef97",
 		}, {
-			.iv	= NULL,
+			.iv	= zeroed_string16,
 			.key	= "2b7e151628aed2a6abf7158809cf4f3c",
 			.plain	= "ae2d8a571e03ac9c9eb76fac45af8e51",
 			.cipher	= "f5d3d58503b9699de785895a96fdbaaf",
 		}, {
-			.iv	= NULL,
+			.iv	= zeroed_string16,
 			.key	= "2b7e151628aed2a6abf7158809cf4f3c",
 			.plain	= "30c81c46a35ce411e5fbc1191a0a52ef",
 			.cipher	= "43b1cd7f598ece23881b00e3ed030688",
 		}, {
-			.iv	= NULL,
+			.iv	= zeroed_string16,
 			.key	= "2b7e151628aed2a6abf7158809cf4f3c",
 			.plain	= "f69f2445df4f9b17ad2b417be66c3710",
 			.cipher	= "7b0c785e27e8ad3f8223207104725dd4",
@@ -144,22 +147,22 @@ static void check_cbc192(void **state)
 {
 	const struct test_data data[] = {
 		{
-			.iv	= NULL,
+			.iv	= zeroed_string16,
 			.key	= "8e73b0f7da0e6452c810f32b809079e562f8ead2522c6b7b",
 			.plain	= "6bc1bee22e409f96e93d7e117393172a",
 			.cipher	= "bd334f1d6e45f25ff712a214571fa5cc",
 		}, {
-			.iv	= NULL,
+			.iv	= zeroed_string16,
 			.key	= "8e73b0f7da0e6452c810f32b809079e562f8ead2522c6b7b",
 			.plain	= "ae2d8a571e03ac9c9eb76fac45af8e51",
 			.cipher	= "974104846d0ad3ad7734ecb3ecee4eef",
 		}, {
-			.iv	= NULL,
+			.iv	= zeroed_string16,
 			.key	= "8e73b0f7da0e6452c810f32b809079e562f8ead2522c6b7b",
 			.plain	= "30c81c46a35ce411e5fbc1191a0a52ef",
 			.cipher	= "ef7afd2270e2e60adce0ba2face6444e",
 		}, {
-			.iv	= NULL,
+			.iv	= zeroed_string16,
 			.key	= "8e73b0f7da0e6452c810f32b809079e562f8ead2522c6b7b",
 			.plain	= "f69f2445df4f9b17ad2b417be66c3710",
 			.cipher	= "9a4b41ba738d6c72fb16691603c18e0e",
