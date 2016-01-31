@@ -50,9 +50,9 @@ struct cfe_cipher_aead_ops {
 };
 
 
-static inline struct cfe_cipher_aead_ops *AEAD_OPS(struct cfe_cipher_ops *ops)
+static inline const struct cfe_cipher_aead_ops *AEAD_OPS(const struct cfe_cipher_ops *ops)
 {
-	return container_of(ops, struct cfe_cipher_aead_ops, base);
+	return const_container_of(ops, struct cfe_cipher_aead_ops, base);
 }
 
 
@@ -77,6 +77,10 @@ struct cfe_cipher_type {
 extern int cfe_cipher_register(struct cfe_cipher_type *type);
 
 extern int cfe_cipher_unregister(struct cfe_cipher_type *type);
+
+extern struct cfe_cipher_type *cfe_cipher_ref(const char *algname);
+
+extern void cfe_cipher_put(struct cfe_cipher_type *type);
 
 extern struct cfe_cipher_ctx *cfe_cipher_alloc_ctx(const char *algname);
 
