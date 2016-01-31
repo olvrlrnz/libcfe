@@ -13,6 +13,8 @@ struct cfe_file;
 struct cfe_open_params {
 	uint32_t header_size;
 	const char *key_ident;
+	const char *cipher;
+	uint32_t blocksize;
 };
 
 
