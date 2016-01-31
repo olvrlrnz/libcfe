@@ -49,10 +49,10 @@
 	(type *)( (char *)__mptr - __builtin_offsetof(type,member) );	\
 })
 
-#define const_container_of(ptr, type, member) __extension__		\
-({									\
-	const typeof( ((type *)0)->member ) *__mptr = (ptr);		\
-	(type *)( (char *)__mptr - __builtin_offsetof(type,member) );	\
+#define const_container_of(ptr, type, member) __extension__				\
+({											\
+	const typeof( ((type *)0)->member ) *__mptr = (ptr);				\
+	(const type *)( (const char *)__mptr - __builtin_offsetof(type,member) );	\
 })
 
 #define ARRAY_SIZE(a)			(sizeof(a) / sizeof((a)[0]) + _must_be_array_(a))
