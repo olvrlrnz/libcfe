@@ -78,14 +78,15 @@ unlock:
 	return ret;
 }
 
-struct cfe_filewriter *cfe_filewriter_create(int version)
+struct cfe_filewriter *cfe_filewriter_create(int version, const char *cipher,
+                                             uint32_t blocksize)
 {
 	struct cfe_filewriter *writer;
 	struct cfe_filewriter_type *type;
 
 	pthread_rwlock_rdlock(&writer_lock);
 	{
-		if (version == -1)
+		if (version == CFE_FILEWRITER_VERSION_DEFAULT)
 			type = writer_default;
 		else
 			type = cfe_filewriter_find(version);
@@ -100,9 +101,11 @@ struct cfe_filewriter *cfe_filewriter_create(int version)
 		return NULL;
 	}
 
-	writer = type->alloc();
-	if (!writer)
+	writer = type->alloc(blocksize, cipher);
+	if (!writer) {
 		cfe_atomic_dec(&type->refcnt);
+		return NULL;
+	}
 
 	writer->type = type;
 	return writer;
