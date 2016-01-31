@@ -18,6 +18,8 @@ static void check_create(void **state)
 	struct cfe_open_params params = {
 		.header_size = 0,
 		.key_ident = "cfe:nonexisting",
+		.cipher = "aes-cbc-256",
+		.blocksize = 512
 	};
 
 	memset(name, 0, sizeof(name));
