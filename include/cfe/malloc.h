@@ -26,4 +26,30 @@ static inline void *cfe_realloc(void *ptr, size_t size)
 }
 
 
+
+static inline void *cfe_malloc_secure(size_t size)
+{
+	/* TODO: implement me */
+	return cfe_malloc(size);
+}
+
+static inline void *cfe_calloc_secure(size_t nmemb, size_t size)
+{
+	/* TODO: implement me */
+	return cfe_calloc(nmemb, size);
+}
+
+static inline void cfe_free_secure(void *ptr)
+{
+	/* TODO: implement me */
+	cfe_free(ptr);
+}
+
+static inline void *cfe_realloc_secure(void *ptr, size_t size)
+{
+	/* TODO: implement me */
+	return cfe_realloc(ptr, size);
+}
+
+
 #endif
