@@ -72,9 +72,8 @@ unlock:
 	return ret;
 }
 
-struct cfe_cipher_ctx *cfe_cipher_alloc_ctx(const char *algname)
+struct cfe_cipher_type *cfe_cipher_ref(const char *algname)
 {
-	struct cfe_cipher_ctx *ctx;
 	struct cfe_cipher_type *type;
 
 	pthread_rwlock_rdlock(&alg_lock);
@@ -85,6 +84,21 @@ struct cfe_cipher_ctx *cfe_cipher_alloc_ctx(const char *algname)
 	}
 	pthread_rwlock_unlock(&alg_lock);
 
+	return type;
+}
+
+void cfe_cipher_put(struct cfe_cipher_type *type)
+{
+	if (type)
+		cfe_atomic_dec(&type->refcnt);
+}
+
+struct cfe_cipher_ctx *cfe_cipher_alloc_ctx(const char *algname)
+{
+	struct cfe_cipher_ctx *ctx;
+	struct cfe_cipher_type *type;
+
+	type = cfe_cipher_ref(algname);
 	if (!type) {
 		errno = ENOSYS;
 		return NULL;
@@ -92,7 +106,7 @@ struct cfe_cipher_ctx *cfe_cipher_alloc_ctx(const char *algname)
 
 	ctx = type->alloc_ctx();
 	if (!ctx) {
-		cfe_atomic_dec(&type->refcnt);
+		cfe_cipher_put(type);
 		return NULL;
 	}
 
@@ -109,7 +123,7 @@ void cfe_cipher_destroy_ctx(struct cfe_cipher_ctx *ctx)
 
 	type = ctx->type;
 	ctx->ops->destroy(ctx);
-	cfe_atomic_dec(&type->refcnt);
+	cfe_cipher_put(type);
 }
 
 
@@ -186,7 +200,7 @@ int cfe_cipher_ctx_set_padding(struct cfe_cipher_ctx *ctx, int on)
 int cfe_cipher_ctx_set_aad(struct cfe_cipher_ctx *ctx,
                            unsigned char *aad, size_t asize)
 {
-	struct cfe_cipher_aead_ops *ops;
+	const struct cfe_cipher_aead_ops *ops;
 
 	if (!ctx || !(ctx->type->flags & CIPHER_TYPE_AEAD)) {
 		errno = EINVAL;
@@ -200,7 +214,7 @@ int cfe_cipher_ctx_set_aad(struct cfe_cipher_ctx *ctx,
 int cfe_cipher_ctx_set_tag(struct cfe_cipher_ctx *ctx,
                            unsigned char *tag, size_t tsize)
 {
-	struct cfe_cipher_aead_ops *ops;
+	const struct cfe_cipher_aead_ops *ops;
 
 	if (!ctx || !(ctx->type->flags & CIPHER_TYPE_AEAD)) {
 		errno = EINVAL;
@@ -214,7 +228,7 @@ int cfe_cipher_ctx_set_tag(struct cfe_cipher_ctx *ctx,
 int cfe_cipher_ctx_get_tag(struct cfe_cipher_ctx *ctx,
                            unsigned char *tag, size_t tsize)
 {
-	struct cfe_cipher_aead_ops *ops;
+	const struct cfe_cipher_aead_ops *ops;
 
 	if (!ctx || !(ctx->type->flags & CIPHER_TYPE_AEAD)) {
 		errno = EINVAL;
