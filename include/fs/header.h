@@ -8,7 +8,7 @@
 #include <cfe/list.h>
 
 
-#define CFE_HEADER_VERSION_DEFAULT		-1
+#define CFE_HEADER_VERSION_DEFAULT		(-1)
 
 
 struct cfe_header_type;
