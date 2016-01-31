@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <fs/filewriter.h>
+#include <crypto/cipher.h>
 #include <cfe/log.h>
 
 
@@ -81,6 +82,7 @@ unlock:
 struct cfe_filewriter *cfe_filewriter_create(int version, const char *cipher,
                                              uint32_t blocksize)
 {
+	struct cfe_cipher_type *ctype;
 	struct cfe_filewriter *writer;
 	struct cfe_filewriter_type *type;
 
@@ -101,9 +103,16 @@ struct cfe_filewriter *cfe_filewriter_create(int version, const char *cipher,
 		return NULL;
 	}
 
-	writer = type->alloc(blocksize, cipher);
+	ctype = cfe_cipher_ref(cipher);
+	if (!ctype) {
+		cfe_atomic_dec(&type->refcnt);
+		return NULL;
+	}
+
+	writer = type->alloc(ctype, blocksize);
 	if (!writer) {
 		cfe_atomic_dec(&type->refcnt);
+		cfe_cipher_put(ctype);
 		return NULL;
 	}
 
