@@ -5,6 +5,7 @@
 #include <fs/filewriter.h>
 #include <cfe/compiler.h>
 #include <cfe/malloc.h>
+#include <crypto/cipher.h>
 #include <sys/mman.h>
 
 
@@ -23,6 +24,7 @@ static void cfe_filewriter_v1_destroy(struct cfe_filewriter_v1 *writer)
 		return;
 
 	pthread_rwlock_destroy(&writer->base.lock);
+	cfe_free_secure(writer->base.key);
 }
 
 static void cfe_filewriter_v1_free(struct cfe_filewriter_v1 *writer)
@@ -67,7 +69,8 @@ static const struct cfe_filewriter_ops cfe_filewriter_v1_ops = {
 };
 
 
-static struct cfe_filewriter *cfe_filewriter_v1_alloc(void)
+static struct cfe_filewriter *
+cfe_filewriter_v1_alloc(struct cfe_cipher_type *cipher, uint32_t blocksize)
 {
 	struct cfe_filewriter_v1 *writer;
 
