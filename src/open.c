@@ -16,6 +16,7 @@
 
 struct cfe_file {
 	struct cfe_header *header;
+	struct cfe_filewriter *writer;
 	cfe_atomic_t refcnt;
 };
 
@@ -77,6 +78,12 @@ static struct cfe_file *do_create(int fd, int flags, mode_t mode,
 	file->header = cfe_header_create(CFE_HEADER_VERSION_DEFAULT,
 	                                 fd, params->header_size);
 	if (!file->header) {
+		goto failed;
+	}
+
+	file->writer = cfe_filewriter_create(CFE_FILEWRITER_VERSION_DEFAULT,
+	                                     params->cipher, params->blocksize);
+	if (!file->writer) {
 		goto failed;
 	}
 
