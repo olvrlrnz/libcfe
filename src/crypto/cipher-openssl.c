@@ -34,6 +34,10 @@ static int openssl_generic_ctx_init(struct cfe_cipher_ctx *ctx,
 	struct openssl_generic_ctx *octx;
 
 	octx = OPENSSL_CTX(ctx);
+
+	if (EVP_CIPHER_key_length(octx->cipher) != ksize)
+		return 1;
+
 	res = EVP_CipherInit_ex(&octx->ctx, octx->cipher, NULL, NULL, NULL, mode);
 	if (res != 1)
 		return 1;
