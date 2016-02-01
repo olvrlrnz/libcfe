@@ -6,8 +6,7 @@ int cfe_fallocate(int fd, off_t offset, off_t len)
 {
 #ifdef HAVE_POSIX_FALLOCATE
 	return posix_fallocate(fd, offset, len);
-#endif
-
+#else
 	fstore_t fst;
 	fst.fst_flags = F_ALLOCATECONTIG;
 	fst.fst_posmode = F_PEOFPOSMODE;
@@ -15,4 +14,5 @@ int cfe_fallocate(int fd, off_t offset, off_t len)
 	fst.fst_length = len;
 	fst.fst_bytesalloc = 0;
 	return fcntl(fd, F_PREALLOCATE, &fst);
+#endif
 }
