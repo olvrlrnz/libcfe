@@ -3,6 +3,7 @@
 
 
 #include <inttypes.h>
+#include <pthread.h>
 #include <cfe/list.h>
 #include <cfe/atomic.h>
 
