@@ -2,8 +2,11 @@ check_PROGRAMS = check_filewriter check_ref check_keystore check_hash check_ciph
 TESTS = $(check_PROGRAMS)
 
 
-TESTS_CFLAGS  = @CMOCKA_CFLAGS@ -I$(top_builddir)/include
-TESTS_LDADD   = @CMOCKA_LIBS@ $(top_builddir)/src/libcfe.la -lkeyutils -lcrypto
+TESTS_CFLAGS  = @CMOCKA_CFLAGS@ -I$(top_builddir)/include @OPENSSL_CFLAGS@
+TESTS_LDADD   = @CMOCKA_LIBS@ $(top_builddir)/src/libcfe.la @OPENSSL_LIBS@
+if LINUX
+TESTS_LDADD  += -lkeyutils
+endif
 
 
 check_filewriter_SOURCES = check_filewriter.c

@@ -9,6 +9,7 @@ nobase_include_HEADERS = crypto/hash.h \
 			 cfe/compiler-clang.h \
 			 cfe/atomic.h \
 			 cfe/cfe.h \
+			 cfe/fcntl.h \
 			 cfe/ref.h \
 			 cfe/utils.h \
 			 cfe/hash.h \

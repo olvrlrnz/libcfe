@@ -41,11 +41,14 @@ AX_PTHREAD([
         CC="$PTHREAD_CC"],
         AC_MSG_ERROR([No pthread support on this machine]))
 
+AC_CHECK_FUNCS([posix_fallocate])
+
 LT_INIT
 LT_LANG([C])
 
 PKG_PROG_PKG_CONFIG([0.28])
 PKG_CHECK_MODULES([CMOCKA], [cmocka >= 1.0.1])
+PKG_CHECK_MODULES([OPENSSL], [openssl >= 0.9.8])
 
 AM_CONDITIONAL([LINUX], [test ${host_os} = "linux"])
 case $host_os in
