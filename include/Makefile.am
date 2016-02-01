@@ -1,5 +1,6 @@
 nobase_include_HEADERS = crypto/hash.h \
 			 crypto/cipher.h \
+			 crypto/pbkdf.h \
 			 fs/header.h \
 			 fs/filewriter.h \
 			 cfe/macros.h \

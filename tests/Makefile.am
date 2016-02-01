@@ -1,4 +1,12 @@
-check_PROGRAMS = check_filewriter check_ref check_keystore check_hash check_cipher check_create
+check_PROGRAMS = \
+		 check_filewriter \
+		 check_ref \
+		 check_keystore \
+		 check_hash \
+		 check_cipher \
+		 check_create \
+		 check_pbkdf
+
 TESTS = $(check_PROGRAMS)
 
 
@@ -28,6 +36,10 @@ check_hash_LDADD   = $(TESTS_LDADD)
 check_cipher_SOURCES = check_cipher.c utils.c
 check_cipher_CFLAGS  = $(TESTS_CFLAGS)
 check_cipher_LDADD   = $(TESTS_LDADD)
+
+check_pbkdf_SOURCES = check_pbkdf.c utils.c
+check_pbkdf_CFLAGS  = $(TESTS_CFLAGS)
+check_pbkdf_LDADD   = $(TESTS_LDADD)
 
 check_create_SOURCES = check_create.c
 check_create_CFLAGS  = $(TESTS_CFLAGS)
