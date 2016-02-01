@@ -1,8 +1,8 @@
 #include <errno.h>
-#include <fcntl.h>
 #include <stdlib.h>
 #include <fs/header.h>
 #include <cfe/compiler.h>
+#include <cfe/fcntl.h>
 #include <cfe/malloc.h>
 #include <sys/mman.h>
 
@@ -81,7 +81,7 @@ static struct cfe_header *cfe_header_v1_alloc(int fd, size_t size)
 	if (!header)
 		return NULL;
 
-	ret = posix_fallocate(fd, 0, size);
+	ret = cfe_fallocate(fd, 0, size);
 	if (ret) {
 		errno = ret;
 		goto failed;
