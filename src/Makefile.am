@@ -1,7 +1,7 @@
 lib_LTLIBRARIES = libcfe.la
 
 SRC  = log.c
-SRC += fcntl.h
+SRC += fcntl.c
 SRC += open.c
 SRC += keystore.c
 if LINUX

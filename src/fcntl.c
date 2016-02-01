@@ -12,7 +12,7 @@ int cfe_fallocate(int fd, off_t offset, off_t len)
 	fst.fst_flags = F_ALLOCATECONTIG;
 	fst.fst_posmode = F_PEOFPOSMODE;
 	fst.fst_offset = offset;
-	fst.fst_length = length;
+	fst.fst_length = len;
 	fst.fst_bytesalloc = 0;
 	return fcntl(fd, F_PREALLOCATE, &fst);
 }
