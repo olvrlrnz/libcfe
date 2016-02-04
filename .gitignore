@@ -66,4 +66,3 @@ Makefile
 tests/**/*.log
 tests/**/*.trs
 tests/**/*.xml
-/tests/check_*
