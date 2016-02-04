@@ -1,19 +1,23 @@
-nobase_include_HEADERS = crypto/hash.h \
+nobase_include_HEADERS = \
 			 crypto/cipher.h \
+			 crypto/hash.h \
 			 crypto/pbkdf.h \
-			 fs/header.h \
-			 fs/filewriter.h \
-			 cfe/macros.h \
-			 cfe/malloc.h \
+			 crypto/rand.h \
+			 cfe/atomic.h \
+			 cfe/bug.h \
+			 cfe/cfe.h \
 			 cfe/compiler.h \
 			 cfe/compiler-gcc.h \
 			 cfe/compiler-clang.h \
-			 cfe/atomic.h \
-			 cfe/cfe.h \
 			 cfe/fcntl.h \
-			 cfe/ref.h \
-			 cfe/utils.h \
 			 cfe/hash.h \
+			 cfe/keystore.h \
 			 cfe/list.h \
 			 cfe/log.h \
-			 cfe/keystore.h
+			 cfe/macros.h \
+			 cfe/malloc.h \
+			 cfe/ref.h \
+			 cfe/types.h \
+			 cfe/utils.h \
+			 fs/filewriter.h \
+			 fs/header.h
