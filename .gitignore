@@ -61,6 +61,11 @@ Makefile
 *~
 
 #
+# pkgconfig
+#
+lib/libcfe.pc
+
+#
 # cmocka
 #
 tests/**/*.log
